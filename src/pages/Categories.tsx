@@ -10,6 +10,7 @@ import ViewToggle from '@/components/ViewToggle';
 import BookDetailsModal from '@/components/BookDetailsModal';
 import CategoryHeroSection from '@/components/CategoryHeroSection';
 import SimpleCategoryCard from '@/components/SimpleCategoryCard';
+import { highlightBook } from '@/utils/navigationUtils';
 const Categories: React.FC = () => {
   const {
     books
@@ -28,22 +29,29 @@ const Categories: React.FC = () => {
 
   // Check if we came from AI search with a book to highlight
   useEffect(() => {
-    if (location.state?.highlightBookId) {
-      setHighlightedBookId(location.state.highlightBookId);
-      setTimeout(() => {
-        const bookElement = document.querySelector(`[data-book-id="${location.state.highlightBookId}"]`);
-        if (bookElement) {
-          bookElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-          });
-        }
+    const state = location.state as any;
+    if (state?.highlightedBookId) {
+      setHighlightedBookId(state.highlightedBookId);
+      
+      // Navigate to the correct area if specified
+      if (state.targetArea && state.targetArea !== areaName) {
+        navigate(`/categories/${encodeURIComponent(state.targetArea)}`);
+        return;
+      }
+      
+      // Wait for books to load and highlight
+      const timer = setTimeout(() => {
+        highlightBook(state.highlightedBookId);
       }, 500);
+      
+      // Clear highlight after 3 seconds  
       setTimeout(() => {
         setHighlightedBookId(null);
       }, 3000);
+      
+      return () => clearTimeout(timer);
     }
-  }, [location.state]);
+  }, [location.state, navigate, areaName]);
 
   // Get areas and count books in each area
   const areaStats = books.reduce((acc: Record<string, number>, book) => {

@@ -1,23 +1,39 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLibrary } from '@/contexts/LibraryContext';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import BookGrid from '@/components/BookGrid';
 import BookDetailsModal from '@/components/BookDetailsModal';
 import MobileNav from '@/components/MobileNav';
 import { Book } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { highlightBook } from '@/utils/navigationUtils';
 
 // For the reading page, we're using the mock data for now
 // In a real app, this would track which books the user is currently reading
 const Reading = () => {
   const { books } = useLibrary();
+  const location = useLocation();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isMobile = useIsMobile();
   
   // Mock reading list (first two books)
   const readingBooks = books.slice(0, 2);
+
+  // Handle navigation state for highlighting books
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.highlightedBookId) {
+      // Wait for books to load and highlight
+      const timer = setTimeout(() => {
+        highlightBook(state.highlightedBookId);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [location.state, readingBooks]);
 
   const handleBookClick = (book: Book) => {
     setSelectedBook(book);

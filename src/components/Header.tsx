@@ -4,6 +4,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ArrowLeft, Search, X, Layers, Home, BookOpen, Heart, BookMarked } from 'lucide-react';
 import { useLibrary } from '@/contexts/LibraryContext';
 import { Input } from '@/components/ui/input';
+import GlobalSearchBar from '@/components/GlobalSearchBar';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -51,30 +52,14 @@ const Header: React.FC = () => {
               </h1>
               
               <div className="flex items-center space-x-4">
-                {isHomePage && (
-                  <>
-                    {showSearch ? (
-                      <div className="flex items-center space-x-2 bg-azure-card/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-azure-border/30">
-                        <Input
-                          type="search"
-                          placeholder="Buscar livros..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="border-none bg-transparent text-sm focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-azure-secondary/70"
-                        />
-                        <button onClick={toggleSearch} className="text-azure-text hover:text-azure-accent transition-colors">
-                          <X size={18} />
-                        </button>
-                      </div>
-                    ) : (
-                      <button 
-                        onClick={toggleSearch} 
-                        className="p-2 rounded-lg bg-azure-card/50 border border-azure-border/30 text-azure-text hover:text-azure-accent hover:bg-azure-card/80 transition-all duration-300 hover:scale-105"
-                      >
-                        <Search size={18} />
-                      </button>
-                    )}
-                  </>
+                {!isHomePage && (
+                  <div className="max-w-md">
+                    <GlobalSearchBar 
+                      className="max-w-md" 
+                      placeholder="Buscar em toda biblioteca..."
+                      showAdvanced={false}
+                    />
+                  </div>
                 )}
               </div>
             </>

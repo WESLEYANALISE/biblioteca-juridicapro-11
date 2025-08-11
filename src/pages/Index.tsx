@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useLibrary } from '@/contexts/LibraryContext';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import BookDetailsModal from '@/components/BookDetailsModal';
 import MobileNav from '@/components/MobileNav';
-import EnhancedSearchBar from '@/components/EnhancedSearchBar';
+import GlobalSearchBar from '@/components/GlobalSearchBar';
 import { Book } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { TrendingUp, Clock, Star, BookOpen, Filter, Grid, List } from 'lucide-react';
@@ -13,14 +14,34 @@ import EnhancedBookGrid from '@/components/EnhancedBookGrid';
 import { useView } from '@/contexts/ViewContext';
 import ViewToggle from '@/components/ViewToggle';
 import { motion } from 'framer-motion';
+import { highlightBook } from '@/utils/navigationUtils';
 
 const Index = () => {
   const { books, isLoading } = useLibrary();
+  const location = useLocation();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const isMobile = useIsMobile();
   const { viewMode } = useView();
+
+  // Handle navigation state for highlighting books
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.highlightedBookId) {
+      // Wait for books to load and DOM to update
+      const timer = setTimeout(() => {
+        highlightBook(state.highlightedBookId);
+        
+        // Filter by area if specified
+        if (state.targetArea) {
+          setSelectedCategory(state.targetArea);
+        }
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [location.state, books]);
 
   const handleBookClick = (book: Book) => {
     setSelectedBook(book);
@@ -83,8 +104,8 @@ const Index = () => {
               <ViewToggle />
             </div>
             
-            {/* Search Bar */}
-            <EnhancedSearchBar />
+            {/* Global Search Bar */}
+            <GlobalSearchBar placeholder="Buscar livros, autores ou áreas do direito..." />
           </div>
         </div>
 

@@ -54,6 +54,7 @@ const CompactBookCard: React.FC<CompactBookCardProps> = ({
 
   return (
     <motion.div 
+      data-book-id={book.id}
       className="
         group bg-black border border-gray-800 rounded-lg overflow-hidden
         hover:border-azure-accent/50 hover:bg-gray-900/50

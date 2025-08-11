@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLibrary } from '@/contexts/LibraryContext';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import BookGrid from '@/components/BookGrid';
 import BookList from '@/components/BookList';
@@ -9,13 +10,28 @@ import MobileNav from '@/components/MobileNav';
 import { Book } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Grid, List, Heart } from 'lucide-react';
+import { highlightBook } from '@/utils/navigationUtils';
 
 const Favorites = () => {
   const { favoriteBooks } = useLibrary();
+  const location = useLocation();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const isMobile = useIsMobile();
+
+  // Handle navigation state for highlighting books
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.highlightedBookId) {
+      // Wait for books to load and highlight
+      const timer = setTimeout(() => {
+        highlightBook(state.highlightedBookId);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [location.state, favoriteBooks]);
 
   const handleBookClick = (book: Book) => {
     setSelectedBook(book);

@@ -65,6 +65,7 @@ const EnhancedBookCard: React.FC<EnhancedBookCardProps> = ({
 
   return (
     <div 
+      data-book-id={book.id}
       className={`
         relative group cursor-pointer transition-all duration-300 ease-out
         transform hover:scale-105 hover:z-10
