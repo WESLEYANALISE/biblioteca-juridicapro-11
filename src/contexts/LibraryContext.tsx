@@ -73,11 +73,11 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
           area: book.area || '',
           livro: book.livro || '',
           link: book.link || '',
-          imagem: book.imagem || '/placeholder.svg', // Fallback image
+          imagem: book.imagem || '/placeholder.svg', // Use "imagem" column for book covers
           sobre: book.sobre || '',
           download: book.download || '',
           favorito: false, // We'll set this based on user favorites
-          progresso: parseInt(book.progresso?.toString() || '0') || 0, // Ensure it's a number
+          progresso: parseInt(book.progresso?.toString() || '0') || 0, // Convert progresso to number
           created_at: book.created_at || new Date().toISOString()
         })) as Book[];
       } catch (error) {
