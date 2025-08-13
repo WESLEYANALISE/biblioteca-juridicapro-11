@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fuzzySearch, searchWithScore } from '@/utils/searchUtils';
+import { imageCache } from '@/hooks/useImageCache';
 
 interface LibraryContextProps {
   books: Book[];
@@ -263,6 +264,20 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     ...book,
     favorito: favorites.includes(book.id)
   }));
+
+  // Preload critical images when books are loaded
+  useEffect(() => {
+    if (enhancedBooks.length > 0) {
+      const criticalImages = enhancedBooks
+        .slice(0, 12) // First 12 books
+        .map(book => book.imagem)
+        .filter(url => url && url !== '/placeholder.svg' && !url.includes('placeholder'));
+      
+      if (criticalImages.length > 0) {
+        imageCache.preloadCritical(criticalImages);
+      }
+    }
+  }, [enhancedBooks]);
 
   // Filter books based on selected area and search term with fuzzy search
   const filteredBooks = enhancedBooks.filter(book => {

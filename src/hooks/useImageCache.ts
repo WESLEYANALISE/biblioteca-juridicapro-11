@@ -11,8 +11,8 @@ interface ImageCacheEntry {
 class ImageCache {
   private cache = new Map<string, ImageCacheEntry>();
   private preloadQueue = new Set<string>();
-  private maxCacheSize = 100;
-  private maxAge = 10 * 60 * 1000; // 10 minutes
+  private maxCacheSize = 200; // Increased cache size
+  private maxAge = 30 * 60 * 1000; // 30 minutes - longer cache
 
   preload(url: string): Promise<void> {
     if (this.cache.has(url) && this.cache.get(url)!.loaded) {
@@ -61,6 +61,29 @@ class ImageCache {
     return entry || null;
   }
 
+  // Batch preload for critical images
+  preloadBatch(urls: string[], priority: 'high' | 'normal' = 'high'): Promise<void[]> {
+    const batchSize = priority === 'high' ? 6 : 3;
+    const batches: string[][] = [];
+    
+    // Split URLs into batches
+    for (let i = 0; i < urls.length; i += batchSize) {
+      batches.push(urls.slice(i, i + batchSize));
+    }
+    
+    // Process batches sequentially to avoid overwhelming the browser
+    return batches.reduce(async (previousBatch, currentBatch) => {
+      await previousBatch;
+      return Promise.allSettled(currentBatch.map(url => this.preload(url)));
+    }, Promise.resolve([])) as Promise<void[]>;
+  }
+
+  // Preload critical images immediately
+  preloadCritical(urls: string[]): void {
+    const criticalUrls = urls.slice(0, 12); // First 12 images
+    this.preloadBatch(criticalUrls, 'high');
+  }
+
   private cleanup() {
     if (this.cache.size <= this.maxCacheSize) return;
     
@@ -87,7 +110,7 @@ export const useImageCache = (url: string, priority: 'high' | 'normal' | 'low' =
       return;
     }
 
-    // Check cache first
+    // Check cache first - faster check
     const cached = imageCache.getCacheStatus(url);
     if (cached) {
       setIsLoaded(cached.loaded);
@@ -110,11 +133,14 @@ export const useImageCache = (url: string, priority: 'high' | 'normal' | 'low' =
   }, [url]);
 
   useEffect(() => {
+    if (!url) return;
+    
     if (priority === 'high') {
+      // High priority images load immediately
       loadImage();
     } else {
-      // For normal/low priority, use a small delay to prioritize high priority images
-      const delay = priority === 'low' ? 300 : 100;
+      // Stagger loading for performance
+      const delay = priority === 'low' ? 200 : 50; // Reduced delays
       const timer = setTimeout(loadImage, delay);
       return () => clearTimeout(timer);
     }

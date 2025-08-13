@@ -26,7 +26,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
     priority
   );
 
-  // Intersection Observer for lazy loading
+  // Intersection Observer for lazy loading with better performance
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -38,8 +38,8 @@ const LazyImage: React.FC<LazyImageProps> = ({
         });
       },
       {
-        rootMargin: '50px', // Start loading 50px before the image enters viewport
-        threshold: 0.1
+        rootMargin: priority === 'high' ? '200px' : '100px', // Larger margin for high priority
+        threshold: 0.01 // Lower threshold for faster loading
       }
     );
 

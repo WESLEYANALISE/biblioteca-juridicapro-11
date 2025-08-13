@@ -10,9 +10,10 @@ interface BookCardProps {
   book: Book & { isNew?: boolean };
   onClick: () => void;
   index?: number;
+  priority?: 'high' | 'normal' | 'low';
 }
 
-const BookCard: React.FC<BookCardProps> = memo(({ book, onClick, index = 0 }) => {
+const BookCard: React.FC<BookCardProps> = memo(({ book, onClick, index = 0, priority }) => {
   const { toggleFavorite } = useLibrary();
   const { toast } = useToast();
   const [isAnimating, setIsAnimating] = useState(false);
@@ -63,8 +64,8 @@ const BookCard: React.FC<BookCardProps> = memo(({ book, onClick, index = 0 }) =>
     setImageError(true);
   }, []);
 
-  // Determine image priority based on index (first few books get high priority)
-  const imagePriority = index < 6 ? 'high' : index < 12 ? 'normal' : 'low';
+  // Use provided priority or fallback to index-based priority
+  const imagePriority = priority || (index < 6 ? 'high' : index < 12 ? 'normal' : 'low');
 
   return (
     <div 
